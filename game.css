@@ -51,12 +51,15 @@ body,html,#win-statistics p{
     margin: 10px;
 }
 
+button{
+    cursor: pointer;
+}
+
 .btn{
     transition: 0.2s;
     font-family: "Pacifico",cursive;
     font-size: 2rem;
     padding: 0 10px;
-    cursor: pointer;
     font-style: normal;
     border-radius: 70px;
     background-color: white;
@@ -72,9 +75,9 @@ body,html,#win-statistics p{
 }
 
 .hover-effect1:hover{
-    background-color: aqua;
-    border-color:rgb(222, 222, 222);
-    color: rgb(222, 222, 222);
+    background-color: aqua !important;
+    border-color:rgb(222, 222, 222) !important;
+    color: rgb(222, 222, 222) !important;
 }
 
 .hover-effect1:active{
@@ -82,9 +85,101 @@ body,html,#win-statistics p{
 }
 
 .hover-effect2:hover{
-    background-color: lightpink;
+    background-color: lightpink !important;
 }
 
 .hover-effect2:active{
-    background-color: lightblue;
+    background-color: lightblue !important;
+}
+
+#reset-button{
+    margin-left: 50px;
+    background-color: white;
+    border-radius: 20px;
+    border: solid black 1px;
+    padding: 10px;
+}
+
+.active-background{
+    color: rgb(222,222,222);
+    border-color: rgb(222,222,222) !important;
+}
+
+@media (max-width: 425px) {
+
+    #reset-button{
+        margin: 0;
+    }
+
+    .btn{
+        font-size: 1rem;
+    }
+
+    body,html,.container{
+        font-size: 1.5rem;
+    }
+}
+
+@media (min-width: 768px) {
+    body,html{
+        font-size: 2.3rem;
+    }
+
+    .btn{
+        border-radius: 2.6rem;
+        padding: 0.3rem;
+        font-size: 1.5rem;
+    }
+
+    #reset-button{
+        font-size: 1rem;
+        border-radius: 1.2rem;
+        padding: 0.4rem;
+    }
+
+    #selected-option,#computer-choice{
+        font-size: 2rem;
+    }
+
+    #win-statistics{
+        font-size: 1rem;
+        padding: 0.5rem;
+        border-radius: 1.4rem;
+    }
+
+    #win-statistics p{
+        line-height: 1.3rem;
+    }
+}
+
+@media (min-width: 2560px){
+    body,html{
+        font-size: 4.5rem;
+    }
+
+    #win-statistics{
+        font-size: 1.5rem;
+        padding: 2.05rem;
+        border-radius: 2.3rem;
+    }
+
+    #win-statistics p{
+        line-height: 2.1rem;
+    }
+
+    .btn{
+        border-radius: 2.6rem;
+        padding: 1rem;
+        font-size: 2rem;
+    }
+
+    #reset-button{
+        font-size: 1.5rem;
+        border-radius: 1.2rem;
+        padding: 0.5rem;
+    }
+
+    #computer-choice,#selected-option{
+        font-size: 3rem;
+    }
 }

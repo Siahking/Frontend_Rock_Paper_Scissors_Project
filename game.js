@@ -14,7 +14,14 @@ const colorLst = ['red','pink','purple','orange','green','brown','blue','yellow'
 //choices for the player and the computer to chose from
 const choices = ['scissors','paper','rock'];
 let counter = 0;
-const btns = document.querySelectorAll('button');
+const btnIds = ["rock-button","scissors-button","paper-button"]
+const btns = [];
+const resetButton = document.getElementById("reset-button")
+
+for (const buttonId of btnIds){
+    const button = document.getElementById(buttonId)
+    btns.push(button)
+}
 
 //returns a random choice whatever list is inserted
 function randomChoice(lst){
@@ -47,8 +54,7 @@ function changeColors(){
     greyP.forEach(p=> p.style.color = 'rgb(222, 222, 222)');
 
     buttons.forEach(button=>{
-        button.style.color = 'rgb(222, 222, 222)';
-        button.style.borderColor = 'rgb(222, 222, 222)';
+        button.classList.add("active-background")
         //changes the hover effect of the buttons
         button.classList.remove('hover-effect1');
         button.classList.add('hover-effect2');
@@ -82,3 +88,5 @@ btns.forEach(btn=>{
         displayOutcome.innerHTML = outcome;
     });
 })
+
+resetButton.addEventListener("click",()=>location.reload())
