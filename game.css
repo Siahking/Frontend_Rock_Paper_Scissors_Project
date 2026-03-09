@@ -1,6 +1,6 @@
 body,html,#container{
     font-family: "Pacifico",cursive;
-    font-size: 2rem;
+    font-size: 50px;
     font-style: normal;
     height: 100%;
 }
@@ -31,15 +31,15 @@ body,html,#win-statistics p{
 #win-statistics{
     position: absolute;
     flex-direction: column;
-    padding: 0px;
+    padding: 10px;
     height:75px;
     width: 80%;
-    border-radius: 40px; 
-    font-size: .9rem;
+    border-radius: 50px; 
+    font-size: 30px;
 }
 
 #win-statistics p{
-    line-height: 35px;
+    line-height: 45px;
 }
 
 #player-div{
@@ -51,6 +51,12 @@ body,html,#win-statistics p{
     margin: 10px;
 }
 
+#player-choice{
+    display:flex;
+    justify-content:space-evenly;
+    width: 100%;
+}
+
 button{
     cursor: pointer;
 }
@@ -58,10 +64,10 @@ button{
 .btn{
     transition: 0.2s;
     font-family: "Pacifico",cursive;
-    font-size: 2rem;
-    padding: 0 10px;
+    font-size: 40px;
+    padding: 0 5px;
     font-style: normal;
-    border-radius: 70px;
+    border-radius: 40px;
     background-color: white;
     border: solid black 2px;
 }
@@ -93,11 +99,20 @@ button{
 }
 
 #reset-button{
-    margin-left: 50px;
+    font-weight: bold;
+    font-size: 15px;
+    margin-left: 31px;
     background-color: white;
-    border-radius: 20px;
+    border-radius: 25px;
     border: solid black 1px;
-    padding: 10px;
+    padding: 10px 15px;
+}
+
+#reset-button-container{
+    margin-top: 50px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 .active-background{
@@ -108,78 +123,84 @@ button{
 @media (max-width: 425px) {
 
     #reset-button{
-        margin: 0;
+        margin-left: 15px;
     }
 
     .btn{
-        font-size: 1rem;
+        font-size: .6rem;
     }
 
-    body,html,.container{
-        font-size: 1.5rem;
+    #selected-option,#computer-choice{
+        font-size: .8rem;
     }
 }
 
 @media (min-width: 768px) {
+    
     body,html{
-        font-size: 2.3rem;
+        font-size: 25px;
     }
 
     .btn{
-        border-radius: 2.6rem;
-        padding: 0.3rem;
-        font-size: 1.5rem;
+        border-radius: 5rem;
+        padding:0rem 1rem;
+        font-size: 2rem; 
     }
 
     #reset-button{
-        font-size: 1rem;
-        border-radius: 1.2rem;
-        padding: 0.4rem;
+        font-size:1.5rem;
+        border-radius: 1.8rem;
+        padding: 1rem;
     }
 
     #selected-option,#computer-choice{
-        font-size: 2rem;
+        font-size: 3.5rem;
     }
 
     #win-statistics{
-        font-size: 1rem;
-        padding: 0.5rem;
-        border-radius: 1.4rem;
+        font-size:1.8rem;
+        padding: 1rem;
+        border-radius: 2.5rem;
     }
 
     #win-statistics p{
-        line-height: 1.3rem;
+        line-height: 2.8rem;
     }
 }
 
 @media (min-width: 2560px){
-    body,html{
-        font-size: 4.5rem;
-    }
-
     #win-statistics{
-        font-size: 1.5rem;
-        padding: 2.05rem;
-        border-radius: 2.3rem;
+        font-size: 6rem;
+        padding:9rem 5rem;
+        border-radius: 10rem;
     }
 
     #win-statistics p{
-        line-height: 2.1rem;
+        line-height: 9rem;
     }
 
     .btn{
-        border-radius: 2.6rem;
-        padding: 1rem;
-        font-size: 2rem;
+        border-radius: 180px;
+        padding: 1.5rem;
+        font-size: 7rem;
     }
 
     #reset-button{
-        font-size: 1.5rem;
-        border-radius: 1.2rem;
-        padding: 0.5rem;
+        font-size: 130px;
+        border-radius: 150px;
+        padding: 50px;
+        margin-left: 150px;
+    }
+
+    #reset-button-container{
+        margin-top: 6rem;
     }
 
     #computer-choice,#selected-option{
-        font-size: 3rem;
+        font-size: 9rem;
+    }
+
+    #player-choice{
+        margin-top: 3rem;
     }
 }
