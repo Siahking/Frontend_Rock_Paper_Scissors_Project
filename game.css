@@ -1,6 +1,6 @@
 body,html,#container{
     font-family: "Pacifico",cursive;
-    font-size: 50px;
+    font-size: 25px;
     font-style: normal;
     height: 100%;
 }
@@ -25,6 +25,7 @@ body,html,#win-statistics p{
 }
 
 #computer-div,#player-div{
+    min-height: 200px;
     flex: 1;
 }
 
@@ -52,6 +53,7 @@ body,html,#win-statistics p{
 }
 
 #player-choice{
+    /* min-height: 100px; */
     display:flex;
     justify-content:space-evenly;
     width: 100%;
@@ -64,8 +66,7 @@ button{
 .btn{
     transition: 0.2s;
     font-family: "Pacifico",cursive;
-    font-size: 40px;
-    padding: 0 5px;
+    font-size: 30px;
     font-style: normal;
     border-radius: 40px;
     background-color: white;
@@ -101,11 +102,11 @@ button{
 #reset-button{
     font-weight: bold;
     font-size: 15px;
-    margin-left: 31px;
     background-color: white;
     border-radius: 25px;
     border: solid black 1px;
     padding: 10px 15px;
+    margin-left: 28px;
 }
 
 #reset-button-container{
@@ -120,87 +121,69 @@ button{
     border-color: rgb(222,222,222) !important;
 }
 
-@media (max-width: 425px) {
+#computer-choice{
+    margin: 0;
+}
 
-    #reset-button{
-        margin-left: 15px;
-    }
-
-    .btn{
-        font-size: .6rem;
-    }
-
-    #selected-option,#computer-choice{
-        font-size: .8rem;
-    }
+.user{
+    font-size: 42px;
 }
 
 @media (min-width: 768px) {
-    
-    body,html{
-        font-size: 25px;
-    }
-
-    .btn{
-        border-radius: 5rem;
-        padding:0rem 1rem;
-        font-size: 2rem; 
+    body{
+        min-height: 800px;
     }
 
     #reset-button{
-        font-size:1.5rem;
-        border-radius: 1.8rem;
-        padding: 1rem;
+        margin-left: 35px;
+        font-size: .6rem;
+        padding: .3rem;
+        border-radius: 1.5rem;
+    }
+
+    .btn{
+        font-size: 1.1rem;
+        border-radius: 2rem;
+        padding: .1rem .5rem;
     }
 
     #selected-option,#computer-choice{
-        font-size: 3.5rem;
+        font-size: 1.9rem;
     }
 
     #win-statistics{
-        font-size:1.8rem;
-        padding: 1rem;
+        font-size: .8rem;
+        padding: .5rem;
+        border-radius: 1.5rem;
+    }
+}
+
+@media (min-width: 1440px) {
+    #selected-option,#computer-choice{
+        font-size: 2.8rem;
+    }
+
+    #win-statistics{
+        font-size: 1.7rem;
+        padding: 1.5rem;
         border-radius: 2.5rem;
     }
 
     #win-statistics p{
-        line-height: 2.8rem;
-    }
-}
-
-@media (min-width: 2560px){
-    #win-statistics{
-        font-size: 6rem;
-        padding:9rem 5rem;
-        border-radius: 10rem;
+        line-height: 2.7rem;
     }
 
-    #win-statistics p{
-        line-height: 9rem;
+    #selected-option,#computer-choice{
+        font-size: 2.9rem;
     }
 
     .btn{
-        border-radius: 180px;
-        padding: 1.5rem;
-        font-size: 7rem;
+        font-size: 1.7rem;
     }
 
     #reset-button{
-        font-size: 130px;
-        border-radius: 150px;
-        padding: 50px;
-        margin-left: 150px;
-    }
-
-    #reset-button-container{
-        margin-top: 6rem;
-    }
-
-    #computer-choice,#selected-option{
-        font-size: 9rem;
-    }
-
-    #player-choice{
-        margin-top: 3rem;
+        margin-left: 43px;
+        font-size: 1.1rem;
+        padding: .5rem;
     }
 }
