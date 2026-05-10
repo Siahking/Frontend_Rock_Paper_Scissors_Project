@@ -131,7 +131,7 @@ button{
 
 @media (min-width: 768px) {
     body{
-        min-height: 800px;
+        min-height: 600px;
     }
 
     #reset-button{
@@ -153,24 +153,29 @@ button{
 
     #win-statistics{
         font-size: .8rem;
-        padding: .5rem;
+        padding: .1rem;
         border-radius: 1.5rem;
+    }
+
+    #win-statistics p{
+        line-height: 1.2rem;
     }
 }
 
 @media (min-width: 1440px) {
-    #selected-option,#computer-choice{
-        font-size: 2.8rem;
+
+    body{
+        min-height: 700px;
     }
 
     #win-statistics{
-        font-size: 1.7rem;
-        padding: 1.5rem;
+        font-size: 1.3rem;
+        padding: 0.9rem;
         border-radius: 2.5rem;
     }
 
     #win-statistics p{
-        line-height: 2.7rem;
+        line-height: 2rem;
     }
 
     #selected-option,#computer-choice{
@@ -178,12 +183,10 @@ button{
     }
 
     .btn{
-        font-size: 1.7rem;
+        font-size: 1.2rem;
     }
 
     #reset-button{
-        margin-left: 43px;
-        font-size: 1.1rem;
-        padding: .5rem;
+        padding: .3rem;
     }
 }
