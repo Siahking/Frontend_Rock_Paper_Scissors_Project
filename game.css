@@ -19,6 +19,10 @@ body,html,#win-statistics p{
     margin: 0;
 }
 
+body{
+    min-height: 600px;
+}
+
 #container{
     flex-direction: column;
     position: relative;
@@ -32,15 +36,14 @@ body,html,#win-statistics p{
 #win-statistics{
     position: absolute;
     flex-direction: column;
-    padding: 10px;
-    height:75px;
+    padding: 1px;
     width: 80%;
     border-radius: 50px; 
-    font-size: 30px;
+    font-size: 20px;
 }
 
 #win-statistics p{
-    line-height: 45px;
+    line-height: 30px;
 }
 
 #player-div{
@@ -163,19 +166,18 @@ button{
 }
 
 @media (min-width: 1440px) {
-
     body{
         min-height: 700px;
     }
 
     #win-statistics{
-        font-size: 1.3rem;
-        padding: 0.9rem;
+        font-size: 1.1rem;
+        padding: 0.1rem;
         border-radius: 2.5rem;
     }
 
     #win-statistics p{
-        line-height: 2rem;
+        line-height: 1.5rem;
     }
 
     #selected-option,#computer-choice{
