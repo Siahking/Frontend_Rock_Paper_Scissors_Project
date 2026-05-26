@@ -13,18 +13,30 @@
     <div id="container">
         <div id="computer-div">
             <p id="computer-choice" class="user greyed">Computer</p>
+            <p class="choice hidden" id="comp-rock">🪨</p>
+            <p class="choice hidden" id="comp-paper">📄</p>
+            <p class="choice hidden" id="comp-scissors">✂️</p>
+            <p class="action hidden" id="comp-handrock">👊</p>
+            <p class="action hidden" id="comp-handpaper">✋</p>
+            <p class="action hidden" id="comp-handscissors">✌️</p>
         </div>
         <div id="win-statistics">
             <p id="winner" ></p>
-            <p id="p2">Wins:<span id="wins">0</span></p>
+            <p id="p2">Wins:<span id="wins">0</span>|Losses:<span id="losses">0</span></p>
         </div>
         <div id="player-div">
-            <p class="user greyed" id="selected-option">Player</p>
             <div id="player-choice">
                 <button id="scissors-button" name="scissors" class="btn hover-effect1">Scissors</button>
                 <button id="rock-button" name="rock" class="btn hover-effect1">Rock</button>
                 <button id="paper-button" name="paper" class="btn hover-effect1">Paper</button>
             </div>
+            <p class="user greyed" id="selected-option">Player</p>
+            <p class="choice hidden" id="player-rock">🪨</p>
+            <p class="choice hidden" id="player-paper">📄</p>
+            <p class="choice hidden" id="player-scissors">✂️</p>
+            <p class="action hidden" id="player-handrock">👊</p>
+            <p class="action hidden" id="player-handpaper">✋</p>
+            <p class="action hidden" id="player-handscissors">✌️</p>
             <div id="reset-button-container">
                 <button id="reset-button" class="hover-effect1">Reset</button>
             </div>
