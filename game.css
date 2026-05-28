@@ -20,7 +20,7 @@ body,html,#win-statistics p{
 }
 
 body{
-    min-height: 600px;
+    min-height: 700px;
 }
 
 #container{
@@ -40,10 +40,18 @@ body{
     width: 80%;
     border-radius: 50px; 
     font-size: 20px;
+    min-width: 250px
 }
 
 #win-statistics p{
     line-height: 30px;
+}
+
+#game-status {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    font-size: 16px;
 }
 
 #player-div{
@@ -64,6 +72,11 @@ body{
 
 button{
     cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .btn{
@@ -168,6 +181,13 @@ button{
     animation: scoreFadeIn 300ms ease-out forwards;
 }
 
+#home-button{
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+}
+
 @keyframes fadeOut{
     0%{
         opacity: 1;
@@ -213,9 +233,6 @@ button{
 }
 
 @media (min-width: 768px) {
-    body{
-        min-height: 600px;
-    }
 
     #reset-button{
         margin-left: 35px;
@@ -237,7 +254,7 @@ button{
     #win-statistics{
         font-size: .8rem;
         padding: .1rem;
-        border-radius: 1.5rem;
+        border-radius: 1.8rem;
     }
 
     #win-statistics p{
@@ -247,21 +264,21 @@ button{
 
 @media (min-width: 1440px) {
     body{
-        min-height: 700px;
+        min-height: 750px;
     }
 
     #win-statistics{
-        font-size: 1.1rem;
+        font-size: 1rem;
         padding: 0.1rem;
         border-radius: 2.5rem;
     }
 
-    #win-statistics p{
+    /* #win-statistics p{
         line-height: 1.5rem;
-    }
+    } */
 
     #selected-option,#computer-choice{
-        font-size: 2.9rem;
+        font-size: 2.1rem;
     }
 
     .btn{

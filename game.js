@@ -14,6 +14,13 @@ const colorLst = ['red','pink','purple','orange','green','brown','blue','yellow'
 //choices for the player and the computer to chose from
 const choices = ['scissors','paper','rock'];
 const countdownChoices = ['rock','paper','scissors'];
+const moveThatBeats = {
+    rock: 'paper',
+    paper: 'scissors',
+    scissors: 'rock'
+};
+const PLAYER_HISTORY_KEY = "rps-player-history";
+const TIME_ATTACK_SECONDS = 30;
 let counter = 0;
 const COUNTDOWN_DISPLAY_TIME = 500;
 const ITEM_DISPLAY_TIME = 2000;
@@ -25,6 +32,11 @@ const btnIds = ["rock-button","scissors-button","paper-button"]
 const btns = [];
 const resetButton = document.getElementById("reset-button")
 let animationTimeouts = [];
+let playerHistory = loadPlayerHistory();
+let isRoundActive = false;
+let isGameOver = false;
+let timeLeft = TIME_ATTACK_SECONDS;
+let timerInterval = null;
 
 for (const buttonId of btnIds){
     const button = document.getElementById(buttonId)
@@ -35,6 +47,158 @@ for (const buttonId of btnIds){
 function randomChoice(lst){
     const random = Math.round(Math.random()*(lst.length - 1))
     return lst[random];
+}
+
+function getSavedGameSetting(key, fallback, allowedValues){
+    const savedValue = localStorage.getItem(key);
+
+    if (allowedValues.includes(savedValue)){
+        return savedValue;
+    }
+
+    return fallback;
+}
+
+const gameSettings = {
+    mode: getSavedGameSetting("gameMode", "classic", ["classic", "time-attack"]),
+    difficulty: getSavedGameSetting("gameDifficulty", "easy", ["easy", "medium", "hard"])
+};
+
+function loadPlayerHistory(){
+    const savedHistory = localStorage.getItem(PLAYER_HISTORY_KEY);
+
+    if (!savedHistory){
+        return [];
+    }
+
+    try {
+        const parsedHistory = JSON.parse(savedHistory);
+        return parsedHistory.filter(choice => choices.includes(choice));
+    } catch {
+        return [];
+    }
+}
+
+function savePlayerMove(playerChoice){
+    playerHistory.push(playerChoice);
+    playerHistory = playerHistory.slice(-50);
+    localStorage.setItem(PLAYER_HISTORY_KEY, JSON.stringify(playerHistory));
+}
+
+function getMostCommonMove(moveList){
+    const moveCounts = {
+        rock: 0,
+        paper: 0,
+        scissors: 0
+    };
+
+    moveList.forEach(move => {
+        moveCounts[move]++;
+    });
+
+    return choices.reduce((bestMove, move) => {
+        if (moveCounts[move] > moveCounts[bestMove]){
+            return move;
+        }
+
+        return bestMove;
+    }, choices[0]);
+}
+
+function predictNextPlayerMove(){
+    if (playerHistory.length === 0){
+        return randomChoice(choices);
+    }
+
+    const lastPlayerMove = playerHistory[playerHistory.length - 1];
+    const followUpMoves = [];
+
+    for (let i = 0; i < playerHistory.length - 1; i++){
+        if (playerHistory[i] === lastPlayerMove){
+            followUpMoves.push(playerHistory[i + 1]);
+        }
+    }
+
+    if (followUpMoves.length > 0){
+        return getMostCommonMove(followUpMoves);
+    }
+
+    return getMostCommonMove(playerHistory);
+}
+
+function getComputerChoice(){
+    if (gameSettings.difficulty === "easy"){
+        return randomChoice(choices);
+    }
+
+    const predictedPlayerMove = predictNextPlayerMove();
+    const counterMove = moveThatBeats[predictedPlayerMove];
+    const predictionChance = gameSettings.difficulty === "hard" ? 0.9 : 0.6;
+
+    if (Math.random() < predictionChance){
+        return counterMove;
+    }
+
+    return randomChoice(choices);
+}
+
+function getOutcome(computerChoice, playerChoice){
+    const gameOutcome = `${computerChoice}-${playerChoice}`;
+
+    if (conditions.win.includes(gameOutcome)){
+        return 'You win';
+    }
+
+    if (conditions.tie.includes(gameOutcome)) {
+        return 'Its a tie';
+    }
+
+    return 'You lose';
+}
+
+function updateGameStatus(){
+    const modeLabel = document.getElementById("mode-label");
+    const difficultyLabel = document.getElementById("difficulty-label");
+    const timerLabel = document.getElementById("timer-label");
+    const timeLeftLabel = document.getElementById("time-left");
+
+    modeLabel.innerHTML = gameSettings.mode === "time-attack" ? "Time Attack" : "Classic";
+    difficultyLabel.innerHTML = capitalize(gameSettings.difficulty);
+    timeLeftLabel.innerHTML = timeLeft;
+    timerLabel.classList.toggle("hidden", gameSettings.mode !== "time-attack");
+}
+
+function setGameButtonsDisabled(disabled){
+    btns.forEach(button => {
+        button.disabled = disabled;
+    });
+}
+
+function startTimeAttackMode(){
+    if (gameSettings.mode !== "time-attack"){
+        return;
+    }
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateGameStatus();
+
+        if (timeLeft <= 0){
+            endTimeAttackMode();
+        }
+    }, 1000);
+}
+
+function endTimeAttackMode(){
+    isGameOver = true;
+    clearInterval(timerInterval);
+    timeLeft = 0;
+    updateGameStatus();
+    setGameButtonsDisabled(true);
+
+    if (!isRoundActive){
+        document.getElementById('winner').innerHTML = "Time's up!";
+    }
 }
 
 //logic to change the colors of the items on the page
@@ -84,7 +248,7 @@ function changeColors(){
 //     }
 // }
 
-function animations(playerChoice,computerChoice,showResult){
+function animations(playerChoice,computerChoice,showResult,onComplete){
     const compCountdownObject = {
         "rock":document.getElementById('comp-handrock'),
         "paper":document.getElementById('comp-handpaper'),
@@ -130,7 +294,7 @@ function animations(playerChoice,computerChoice,showResult){
         hideChoices(compCountdownObject, playerCountdownObject);
         computerSelection.classList.remove("hidden");
         playerSelection.classList.remove("hidden");
-        showResult();
+        showResult(); 
     },COUNTDOWN_DISPLAY_TIME * countdownChoices.length)
 
     animationTimeouts.push(resultTimeout);
@@ -146,11 +310,15 @@ function animations(playerChoice,computerChoice,showResult){
 
     const resetTimeout = setTimeout(()=>{
         hideChoices(compChoiceObject, playerChoiceObject, compCountdownObject, playerCountdownObject)
-        document.getElementById('winner').innerHTML = "";
-        document.getElementById('winner').classList.remove(FADE_OUT_CLASS);
+        const winner = document.getElementById('winner');
+        winner.innerHTML = isGameOver ? "Time's up!" : "";
+        winner.classList.remove(FADE_OUT_CLASS);
         document.getElementById('computer-choice').innerHTML = "Computer";
         document.getElementById('selected-option').innerHTML = "Player";
         controlElements("show")
+        if (onComplete){
+            onComplete();
+        }
     },COUNTDOWN_DISPLAY_TIME * countdownChoices.length + ITEM_DISPLAY_TIME + PAGE_FADE_TIME)
 
     animationTimeouts.push(resetTimeout);
@@ -231,21 +399,19 @@ function controlElements(control){
 //game logic
 btns.forEach(btn=>{
     btn.addEventListener('click',function (){
-        const computerChoice = randomChoice(choices);//saves a random choice form the choice array for the user
+        if (isRoundActive || isGameOver){
+            return;
+        }
+
+        isRoundActive = true;
+        setGameButtonsDisabled(true);
+
+        const computerChoice = getComputerChoice();//saves a computer choice based on the chosen difficulty
         const playerChoice = this.name//saves the name of the button as the players choice on click
-        const gameOutcome = `${computerChoice}-${playerChoice}`;//saves the outcome of the game to compare to the win conditons
         const displayOutcome = document.getElementById('winner');
         const wins = document.getElementById('wins')
         const losses = document.getElementById('losses')
-        let outcome = '';
-        
-        if (conditions.win.includes(gameOutcome)){//compares the game outcome with the conditions
-            outcome = 'You win';
-        }else if (conditions.tie.includes(gameOutcome)) {
-            outcome = 'Its a tie';
-        }else{
-            outcome = 'You lose';
-        }
+        const outcome = getOutcome(computerChoice, playerChoice);
 
         animations(playerChoice,computerChoice,()=>{
             if (outcome === 'You win'){
@@ -258,8 +424,18 @@ btns.forEach(btn=>{
             document.getElementById('selected-option').innerHTML = `Player:${playerChoice}`;//displays the player choice
             displayOutcome.innerHTML = outcome;
             changeColors();
+            savePlayerMove(playerChoice);
+        }, () => {
+            isRoundActive = false;
+            setGameButtonsDisabled(isGameOver);
         })
     });
 })
 
-resetButton.addEventListener("click",()=>location.reload())
+resetButton.addEventListener("click",()=>{
+    localStorage.removeItem(PLAYER_HISTORY_KEY);
+    location.reload();
+})
+
+updateGameStatus();
+startTimeAttackMode();
