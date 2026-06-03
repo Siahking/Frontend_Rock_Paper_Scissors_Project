@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game</title>
-    <link rel="stylesheet" href="game.css">
+    <link rel="stylesheet" href="../styles/game.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 </head>
 <body>
+    <button id="home-button" class="btn hover-effect2">Home</button>
+    <div id="achievement-banner" class="hidden" aria-live="polite"></div>
     <div id="container">
         <div id="computer-div">
             <p id="computer-choice" class="user greyed">Computer</p>
@@ -23,6 +25,11 @@
         <div id="win-statistics">
             <p id="winner" ></p>
             <p id="p2">Wins:<span id="wins">0</span>|Losses:<span id="losses">0</span></p>
+            <p id="game-status">
+                <span id="mode-label">Classic</span>
+                <span id="difficulty-label">Easy</span>
+                <span id="timer-label" class="hidden">Time:<span id="time-left">30</span>s</span>
+            </p>
         </div>
         <div id="player-div">
             <div id="player-choice">
@@ -43,6 +50,6 @@
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <script src="../jscode/game.js" type="module"></script>
 </body>
 </html>
