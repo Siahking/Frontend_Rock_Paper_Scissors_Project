@@ -19,8 +19,117 @@ const moveThatBeats = {
     paper: 'scissors',
     scissors: 'rock'
 };
+
 const PLAYER_HISTORY_KEY = "rps-player-history";
+const ACHIEVEMENTS_KEY = "rps-achievements";
+const GAME_STATS_KEY = "rps-game-stats";
 const TIME_ATTACK_SECONDS = 30;
+const ACHIEVEMENT_DISPLAY_TIME = 2000;
+const ACHIEVEMENT_FADE_TIME = 300;
+
+const defaultAchievements = {
+    firstWin: false, //win one time
+    firstLoss: false, //lose one time
+    tenWinsInARow:false, //win 10 times in a row
+    tenLossesInARow:false, //lose 10 times in a row
+    timeAttackWinner: false, //win a time attack game
+    timeAttackVeteran: false, //play 10 time attack games
+    easyChampion: false, // win 10 easy games
+    mediumChampion: false, //win 10 medium games
+    hardChampion: false, //win 10 hard games
+    firstTie: false, // tie one game
+    jackOfAllTrades: false, //win atleast one game on each diffiulty and mode
+    unbeatable: false, // win 20 games in a row
+    rockPaperScissors: false, // play 1 of each option in one game
+    betterLuckNextTime: false, // lose 10 times
+    dedicatedPlayer: false //play over 50 games
+};
+
+const defaultGameStats = {
+    wins: 0,
+    losses:0,
+    ties:0,
+    winStreak:0,
+    lossStreak:0,
+    gamesPlayed:0,
+    timeAttackWins:0,
+    timeAttackGames:0,
+    easyWins:0,
+    mediumWins:0,
+    hardWins:0,
+    playerOptions:{
+        "rock":0,
+        "paper":0,
+        "scissors":0
+    },
+};
+
+let achievements = loadSavedGameData(ACHIEVEMENTS_KEY, defaultAchievements);
+let gameStats = loadSavedGameData(GAME_STATS_KEY, defaultGameStats);
+
+const achievementDefinitions = {
+    firstWin:{
+        name: "First Win",
+        check: () => gameStats.wins === 1
+    },
+    firstLoss:{
+        name: "First Loss",
+        check: () => gameStats.losses === 1
+    },
+    tenWinsInARow:{
+        name: "10 Wins in a Row",
+        check: () => gameStats.winStreak >= 10
+    },
+    tenLossesInARow:{
+        name: "10 Losses in a Row",
+        check: () => gameStats.lossStreak >= 10
+    },
+    timeAttackWinner:{
+        name: "Time Attack Winner",
+        check: () => gameStats.timeAttackWins == 1
+    },
+    timeAttackVeteran:{
+        name: "Time Attack Veteran",
+        check: () => gameStats.timeAttackGames >= 10
+    },
+    easyChampion:{
+        name: "Easy Champion",
+        check: () => gameStats.easyWins >= 10
+    },
+    mediumChampion:{
+        name: "Medium Champion",
+        check: () => gameStats.mediumWins >= 10
+    },
+    hardChampion:{
+        name: "Hard Champion",
+        check: () => gameStats.hardWins >= 10
+    },
+    firstTie:{
+        name: "First Tie",
+        check: () => gameStats.ties >= 1
+    },
+    jackOfAllTrades:{
+        name: "Jack of All Trades",
+        check: () => gameStats.easyWins >= 1 && gameStats.mediumWins >= 1 && gameStats.hardWins >=1 && gameStats.timeAttackWins >= 1
+    },
+    unbeatable:{
+        name: "Unbeatable",
+        check: () => gameStats.winStreak > 19
+    },
+    rockPaperScissors: {
+        name: "Rock Paper Scissors",
+        check: () => gameStats.playerOptions["rock"] >= 1 && gameStats.playerOptions["paper"] >= 1 && gameStats.playerOptions["scissors"] >= 1
+    },
+    betterLuckNextTime:{
+        name: "Better Luck Next Time",
+        check: () => gameStats.losses >= 10
+    },
+    dedicatedPlayer:{
+        name:" Dedicated Player",
+        check: () => gameStats.gamesPlayed >= 50
+    }
+}
+
 let counter = 0;
 const COUNTDOWN_DISPLAY_TIME = 500;
 const ITEM_DISPLAY_TIME = 2000;
@@ -31,12 +140,18 @@ const SCORE_FADE_TIME = 300;
 const btnIds = ["rock-button","scissors-button","paper-button"]
 const btns = [];
 const resetButton = document.getElementById("reset-button")
+const homeButton = document.getElementById("home-button")
 let animationTimeouts = [];
 let playerHistory = loadPlayerHistory();
 let isRoundActive = false;
 let isGameOver = false;
 let timeLeft = TIME_ATTACK_SECONDS;
 let timerInterval = null;
+let timeAttackSessionWins = 0;
+let timeAttackSessionLosses = 0;
+let timeAttackResultSaved = false;
+let achievementQueue = [];
+let isAchievementShowing = false;
 
 for (const buttonId of btnIds){
     const button = document.getElementById(buttonId)
@@ -57,6 +172,42 @@ function getSavedGameSetting(key, fallback, allowedValues){
     }
 
     return fallback;
+}
+
+function copyGameData(defaultData){
+    return JSON.parse(JSON.stringify(defaultData));
+}
+
+function loadSavedGameData(key, defaultData){
+    const savedData = localStorage.getItem(key);
+    const fallbackData = copyGameData(defaultData);
+
+    if (!savedData){
+        return fallbackData;
+    }
+
+    try {
+        const parsedData = JSON.parse(savedData);
+        const mergedData = {
+            ...fallbackData,
+            ...parsedData
+        };
+
+        if (fallbackData.playerOptions){
+            mergedData.playerOptions = {
+                ...fallbackData.playerOptions,
+                ...(parsedData.playerOptions || {})
+            };
+        }
+
+        return mergedData;
+    } catch {
+        return fallbackData;
+    }
+}
+
+function saveGameData(key, data){
+    localStorage.setItem(key, JSON.stringify(data));
 }
 
 const gameSettings = {
@@ -198,7 +349,134 @@ function endTimeAttackMode(){
 
     if (!isRoundActive){
         document.getElementById('winner').innerHTML = "Time's up!";
+        processTimeAttackGame();
     }
+}
+
+function getResultType(outcome){
+    if (outcome === "You win"){
+        return "win";
+    }
+
+    if (outcome === "You lose"){
+        return "lose";
+    }
+
+    return "tie";
+}
+
+function updateStats(result, playerChoice){
+    gameStats.gamesPlayed++;
+    gameStats.playerOptions[playerChoice]++;
+
+    switch(result){
+        case "win":
+            gameStats.wins++;
+            gameStats.winStreak++;
+            gameStats.lossStreak = 0;
+            gameStats[`${gameSettings.difficulty}Wins`]++;
+
+            if (gameSettings.mode === "time-attack"){
+                timeAttackSessionWins++;
+            }
+            break;
+        case "lose":
+            gameStats.losses++;
+            gameStats.lossStreak++;
+            gameStats.winStreak = 0;
+
+            if (gameSettings.mode === "time-attack"){
+                timeAttackSessionLosses++;
+            }
+            break;
+        case "tie":
+            gameStats.ties++;
+            gameStats.winStreak = 0;
+            gameStats.lossStreak = 0;
+            break;
+    }
+}
+
+function checkAchievements(){
+    const achievementsUnlocked = [];
+
+    Object.entries(achievementDefinitions).forEach(([achievementId, achievement]) => {
+        if (!achievements[achievementId] && achievement.check()){
+            achievements[achievementId] = true;
+            achievementsUnlocked.push(achievementId);
+        }
+    });
+
+    return achievementsUnlocked;
+}
+
+function processGame(playerChoice,outcome){
+    const result = getResultType(outcome);
+
+    updateStats(result, playerChoice);
+    const achievementsUnlocked = checkAchievements();
+
+    saveGameData(GAME_STATS_KEY, gameStats);
+    saveGameData(ACHIEVEMENTS_KEY, achievements);
+    queueAchievementNotifications(achievementsUnlocked);
+}
+
+function processTimeAttackGame(){
+    if (gameSettings.mode !== "time-attack" || timeAttackResultSaved){
+        return;
+    }
+
+    timeAttackResultSaved = true;
+    gameStats.timeAttackGames++;
+
+    if (timeAttackSessionWins > timeAttackSessionLosses){
+        gameStats.timeAttackWins++;
+    }
+
+    const achievementsUnlocked = checkAchievements();
+
+    saveGameData(GAME_STATS_KEY, gameStats);
+    saveGameData(ACHIEVEMENTS_KEY, achievements);
+    queueAchievementNotifications(achievementsUnlocked);
+}
+
+function queueAchievementNotifications(achievementIds){
+    const unlockedAchievements = achievementIds
+        .map(achievementId => achievementDefinitions[achievementId])
+        .filter(Boolean);
+
+    achievementQueue.push(...unlockedAchievements);
+
+    if (!isAchievementShowing){
+        showNextAchievementNotification();
+    }
+}
+
+function showNextAchievementNotification(){
+    const achievementBanner = document.getElementById("achievement-banner");
+
+    if (!achievementBanner || achievementQueue.length === 0){
+        isAchievementShowing = false;
+        return;
+    }
+
+    isAchievementShowing = true;
+    const achievement = achievementQueue.shift();
+    achievementBanner.textContent = `Achievement unlocked: ${achievement.name}`;
+    achievementBanner.classList.remove("hidden", "achievement-show", "achievement-hide");
+    void achievementBanner.offsetWidth;
+    achievementBanner.classList.add("achievement-show");
+
+    setTimeout(() => {
+        achievementBanner.classList.remove("achievement-show");
+        achievementBanner.classList.add("achievement-hide");
+    }, ACHIEVEMENT_DISPLAY_TIME);
+
+    setTimeout(() => {
+        achievementBanner.classList.add("hidden");
+        achievementBanner.classList.remove("achievement-hide");
+        showNextAchievementNotification();
+    }, ACHIEVEMENT_DISPLAY_TIME + ACHIEVEMENT_FADE_TIME);
 }
 
 //logic to change the colors of the items on the page
@@ -233,20 +511,6 @@ function changeColors(){
     })
 
 };
-
-// function hardMode(playerChoice){
-//     let choices = {
-//         "scissors":0,
-//         "paper":0,
-//         "rock":0
-//     }
-
-//     if (localStorage.getItem("Choices")){
-//         choices = JSON.parse(localStorage.getItem("Choices"))
-//     }else{
-//         choices[playerChoice]++;
-//     }
-// }
 
 function animations(playerChoice,computerChoice,showResult,onComplete){
     const compCountdownObject = {
@@ -426,6 +690,10 @@ btns.forEach(btn=>{
             changeColors();
             savePlayerMove(playerChoice);
         }, () => {
+            processGame(playerChoice, outcome);
+            if (isGameOver){
+                processTimeAttackGame();
+            }
             isRoundActive = false;
             setGameButtonsDisabled(isGameOver);
         })
@@ -435,6 +703,10 @@ btns.forEach(btn=>{
 resetButton.addEventListener("click",()=>{
     localStorage.removeItem(PLAYER_HISTORY_KEY);
     location.reload();
+})
+
+homeButton.addEventListener("click", () => {
+    window.location.href = "gamesettings.html";
 })
 
 updateGameStatus();

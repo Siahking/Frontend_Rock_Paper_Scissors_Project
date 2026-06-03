@@ -188,6 +188,33 @@ button:disabled {
     z-index: 1000;
 }
 
+#achievement-banner{
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    z-index: 2000;
+    width: min(420px, calc(100% - 32px));
+    padding: 12px 18px;
+    border: 2px solid black;
+    border-radius: 8px;
+    background: white;
+    color: black;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+    font-size: 18px;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -8px);
+}
+
+.achievement-show{
+    animation: achievementFadeIn 300ms ease-out forwards;
+}
+
+.achievement-hide{
+    animation: achievementFadeOut 300ms ease-in forwards;
+}
+
 @keyframes fadeOut{
     0%{
         opacity: 1;
@@ -229,6 +256,30 @@ button:disabled {
 
     to{
         opacity: 1;
+    }
+}
+
+@keyframes achievementFadeIn{
+    from{
+        opacity: 0;
+        transform: translate(-50%, -8px);
+    }
+
+    to{
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes achievementFadeOut{
+    from{
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+
+    to{
+        opacity: 0;
+        transform: translate(-50%, -8px);
     }
 }
 

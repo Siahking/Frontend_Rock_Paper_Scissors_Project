@@ -10,7 +10,9 @@ const startButton = document.getElementById('start-game')
 const selectedSettings = document.getElementById('selected-settings')
 const homeButton = document.getElementById('home-button')
 
-homeButton.addEventListener('click',()=>window.location.href="gamesettings.html")
+if (homeButton){
+    homeButton.addEventListener('click',()=>window.location.href="gamesettings.html")
+}
 
 const modeButtons = {
     "time-attack": timeAttackBtn,
