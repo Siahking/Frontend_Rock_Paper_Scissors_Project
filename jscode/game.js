@@ -24,6 +24,11 @@ const PLAYER_HISTORY_KEY = "rps-player-history";
 const ACHIEVEMENTS_KEY = "rps-achievements";
 const GAME_STATS_KEY = "rps-game-stats";
 const TIME_ATTACK_SECONDS = 30;
+const CLASSIC_ROUND_LIMITS = {
+    easy: 10,
+    medium: 20,
+    hard: 30
+};
 const ACHIEVEMENT_DISPLAY_TIME = 2000;
 const ACHIEVEMENT_FADE_TIME = 300;
 
@@ -34,9 +39,9 @@ const defaultAchievements = {
     tenLossesInARow:false, //lose 10 times in a row
     timeAttackWinner: false, //win a time attack game
     timeAttackVeteran: false, //play 10 time attack games
-    easyChampion: false, // win 10 easy games
-    mediumChampion: false, //win 10 medium games
-    hardChampion: false, //win 10 hard games
+    easyChampion: false, // win 10 easy classic games
+    mediumChampion: false, //win 10 medium classic games
+    hardChampion: false, //win 10 hard classic games
     firstTie: false, // tie one game
     jackOfAllTrades: false, //win atleast one game on each diffiulty and mode
     unbeatable: false, // win 20 games in a row
@@ -54,9 +59,11 @@ const defaultGameStats = {
     gamesPlayed:0,
     timeAttackWins:0,
     timeAttackGames:0,
-    easyWins:0,
-    mediumWins:0,
-    hardWins:0,
+    classicMatchWins:{
+        easy:0,
+        medium:0,
+        hard:0
+    },
     playerOptions:{
         "rock":0,
         "paper":0,
@@ -69,63 +76,63 @@ let gameStats = loadSavedGameData(GAME_STATS_KEY, defaultGameStats);
 
 const achievementDefinitions = {
     firstWin:{
-        name: "First Win",
+        name: "🏆 First Win",
         check: () => gameStats.wins === 1
     },
     firstLoss:{
-        name: "First Loss",
+        name: "💀 First Loss",
         check: () => gameStats.losses === 1
     },
     tenWinsInARow:{
-        name: "10 Wins in a Row",
+        name: "🔥 10 Wins in a Row",
         check: () => gameStats.winStreak >= 10
     },
     tenLossesInARow:{
-        name: "10 Losses in a Row",
+        name: "😭 10 Losses in a Row",
         check: () => gameStats.lossStreak >= 10
     },
     timeAttackWinner:{
-        name: "Time Attack Winner",
+        name: "⏰ Time Attack Winner",
         check: () => gameStats.timeAttackWins == 1
     },
     timeAttackVeteran:{
-        name: "Time Attack Veteran",
+        name: "⚡ Time Attack Veteran",
         check: () => gameStats.timeAttackGames >= 10
     },
     easyChampion:{
-        name: "Easy Champion",
-        check: () => gameStats.easyWins >= 10
+        name: "🥉 Easy Champion",
+        check: () => gameStats.classicMatchWins.easy >= 10
     },
     mediumChampion:{
-        name: "Medium Champion",
-        check: () => gameStats.mediumWins >= 10
+        name: "🥈 Medium Champion",
+        check: () => gameStats.classicMatchWins.medium >= 10
     },
     hardChampion:{
-        name: "Hard Champion",
-        check: () => gameStats.hardWins >= 10
+        name: "🥇 Hard Champion",
+        check: () => gameStats.classicMatchWins.hard >= 10
     },
     firstTie:{
-        name: "First Tie",
+        name: "🤝 First Tie",
         check: () => gameStats.ties >= 1
     },
     jackOfAllTrades:{
-        name: "Jack of All Trades",
-        check: () => gameStats.easyWins >= 1 && gameStats.mediumWins >= 1 && gameStats.hardWins >=1 && gameStats.timeAttackWins >= 1
+        name: "🎭 Jack of All Trades",
+        check: () => gameStats.classicMatchWins.easy >= 1 && gameStats.classicMatchWins.medium >= 1 && gameStats.classicMatchWins.hard >=1 && gameStats.timeAttackWins >= 1
     },
     unbeatable:{
-        name: "Unbeatable",
+        name: "👑 Unbeatable",
         check: () => gameStats.winStreak > 19
     },
     rockPaperScissors: {
-        name: "Rock Paper Scissors",
-        check: () => gameStats.playerOptions["rock"] >= 1 && gameStats.playerOptions["paper"] >= 1 && gameStats.playerOptions["scissors"] >= 1
+        name: "🪨📄✂️ Rock Paper Scissors",
+        check: () => sessionPlayerOptions["rock"] >= 1 && sessionPlayerOptions["paper"] >= 1 && sessionPlayerOptions["scissors"] >= 1
     },
     betterLuckNextTime:{
-        name: "Better Luck Next Time",
+        name: "🍀 Better Luck Next Time",
         check: () => gameStats.losses >= 10
     },
     dedicatedPlayer:{
-        name:" Dedicated Player",
+        name:"🎮 Dedicated Player",
         check: () => gameStats.gamesPlayed >= 50
     }
 }
@@ -147,11 +154,22 @@ let isRoundActive = false;
 let isGameOver = false;
 let timeLeft = TIME_ATTACK_SECONDS;
 let timerInterval = null;
+let classicRoundsPlayed = 0;
+let classicSessionWins = 0;
+let classicSessionLosses = 0;
+let classicSessionTies = 0;
+let classicResultSaved = false;
 let timeAttackSessionWins = 0;
 let timeAttackSessionLosses = 0;
+let timeAttackSessionTies = 0;
 let timeAttackResultSaved = false;
 let achievementQueue = [];
 let isAchievementShowing = false;
+let sessionPlayerOptions = {
+    rock: 0,
+    paper: 0,
+    scissors: 0
+};
 
 for (const buttonId of btnIds){
     const button = document.getElementById(buttonId)
@@ -197,6 +215,13 @@ function loadSavedGameData(key, defaultData){
             mergedData.playerOptions = {
                 ...fallbackData.playerOptions,
                 ...(parsedData.playerOptions || {})
+            };
+        }
+
+        if (fallbackData.classicMatchWins){
+            mergedData.classicMatchWins = {
+                ...fallbackData.classicMatchWins,
+                ...(parsedData.classicMatchWins || {})
             };
         }
 
@@ -312,11 +337,17 @@ function updateGameStatus(){
     const difficultyLabel = document.getElementById("difficulty-label");
     const timerLabel = document.getElementById("timer-label");
     const timeLeftLabel = document.getElementById("time-left");
+    const roundLimitLabel = document.getElementById("round-limit-label");
+    const roundsPlayedLabel = document.getElementById("rounds-played");
+    const roundLimitTotalLabel = document.getElementById("round-limit-total");
 
     modeLabel.innerHTML = gameSettings.mode === "time-attack" ? "Time Attack" : "Classic";
     difficultyLabel.innerHTML = capitalize(gameSettings.difficulty);
     timeLeftLabel.innerHTML = timeLeft;
     timerLabel.classList.toggle("hidden", gameSettings.mode !== "time-attack");
+    roundLimitLabel.classList.toggle("hidden", gameSettings.mode !== "classic");
+    roundsPlayedLabel.innerHTML = classicRoundsPlayed;
+    roundLimitTotalLabel.innerHTML = CLASSIC_ROUND_LIMITS[gameSettings.difficulty];
 }
 
 function setGameButtonsDisabled(disabled){
@@ -348,9 +379,47 @@ function endTimeAttackMode(){
     setGameButtonsDisabled(true);
 
     if (!isRoundActive){
-        document.getElementById('winner').innerHTML = "Time's up!";
-        processTimeAttackGame();
+        finishTimeAttackGame();
     }
+}
+
+function endClassicMode(){
+    if (gameSettings.mode !== "classic" || classicResultSaved){
+        return;
+    }
+
+    isGameOver = true;
+    classicResultSaved = true;
+    setGameButtonsDisabled(true);
+
+    if (classicSessionWins > classicSessionLosses){
+        gameStats.classicMatchWins[gameSettings.difficulty]++;
+    }
+
+    const achievementsUnlocked = checkAchievements();
+
+    saveGameData(GAME_STATS_KEY, gameStats);
+    saveGameData(ACHIEVEMENTS_KEY, achievements);
+    queueAchievementNotifications(achievementsUnlocked);
+    showOverallResult("", classicSessionWins, classicSessionLosses, classicSessionTies);
+}
+
+function finishTimeAttackGame(){
+    processTimeAttackGame();
+    showOverallResult("Time's up!", timeAttackSessionWins, timeAttackSessionLosses, timeAttackSessionTies);
+}
+
+function showOverallResult(prefix, wins, losses, ties){
+    let resultText = "The match ended in a tie!";
+
+    if (wins > losses){
+        resultText = "You won the match!";
+    } else if (losses > wins){
+        resultText = "You lost the match!";
+    }
+
+    document.getElementById('winner').innerHTML = `${prefix} ${resultText}`.trim();
+    document.getElementById('p2').innerHTML = `Wins:<span id="wins">${wins}</span>|Losses:<span id="losses">${losses}</span>|Ties:<span id="ties">${ties}</span>`;
 }
 
 function getResultType(outcome){
@@ -368,16 +437,22 @@ function getResultType(outcome){
 function updateStats(result, playerChoice){
     gameStats.gamesPlayed++;
     gameStats.playerOptions[playerChoice]++;
+    sessionPlayerOptions[playerChoice]++;
+
+    if (gameSettings.mode === "classic"){
+        classicRoundsPlayed++;
+    }
 
     switch(result){
         case "win":
             gameStats.wins++;
             gameStats.winStreak++;
             gameStats.lossStreak = 0;
-            gameStats[`${gameSettings.difficulty}Wins`]++;
 
             if (gameSettings.mode === "time-attack"){
                 timeAttackSessionWins++;
+            } else {
+                classicSessionWins++;
             }
             break;
         case "lose":
@@ -387,12 +462,20 @@ function updateStats(result, playerChoice){
 
             if (gameSettings.mode === "time-attack"){
                 timeAttackSessionLosses++;
+            } else {
+                classicSessionLosses++;
             }
             break;
         case "tie":
             gameStats.ties++;
             gameStats.winStreak = 0;
             gameStats.lossStreak = 0;
+
+            if (gameSettings.mode === "time-attack"){
+                timeAttackSessionTies++;
+            } else {
+                classicSessionTies++;
+            }
             break;
     }
 }
@@ -418,6 +501,7 @@ function processGame(playerChoice,outcome){
 
     saveGameData(GAME_STATS_KEY, gameStats);
     saveGameData(ACHIEVEMENTS_KEY, achievements);
+    updateGameStatus();
     queueAchievementNotifications(achievementsUnlocked);
 }
 
@@ -675,6 +759,7 @@ btns.forEach(btn=>{
         const displayOutcome = document.getElementById('winner');
         const wins = document.getElementById('wins')
         const losses = document.getElementById('losses')
+        const ties = document.getElementById('ties')
         const outcome = getOutcome(computerChoice, playerChoice);
 
         animations(playerChoice,computerChoice,()=>{
@@ -682,6 +767,8 @@ btns.forEach(btn=>{
                 updateScore(wins);
             } else if (outcome === 'You lose') {
                 updateScore(losses);
+            } else {
+                updateScore(ties);
             }
 
             document.getElementById('computer-choice').innerHTML =`Computer:${computerChoice}`;
@@ -691,8 +778,11 @@ btns.forEach(btn=>{
             savePlayerMove(playerChoice);
         }, () => {
             processGame(playerChoice, outcome);
-            if (isGameOver){
-                processTimeAttackGame();
+            if (gameSettings.mode === "classic" && classicRoundsPlayed >= CLASSIC_ROUND_LIMITS[gameSettings.difficulty]){
+                endClassicMode();
+            }
+            if (gameSettings.mode === "time-attack" && isGameOver){
+                finishTimeAttackGame();
             }
             isRoundActive = false;
             setGameButtonsDisabled(isGameOver);
