@@ -169,7 +169,7 @@ button:disabled {
     animation-fill-mode: forwards;
 }
 
-#wins,#losses{
+#wins,#losses,#ties{
     display: inline-block;
 }
 
